@@ -251,29 +251,46 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     main blockquote strong { color: var(--text); font-weight: 700; }
 
     /* In-Page TOC (Mobile Dropdown) */
+/* In-Page TOC (Mobile Sticky Dropdown) */
     .mobile-toc {
       display: none;
-      margin-bottom: 1.5rem;
+      position: sticky;
+      top: 60px; /* Aligns flush beneath the 60px sticky header */
+      z-index: 30;
+      margin: 0 0 1.5rem 0;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
       font-family: system-ui, sans-serif;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); /* Subtle elevation */
     }
     .mobile-toc summary {
-      padding: 0.6rem 1rem;
+      padding: 0.65rem 1rem;
       font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       color: var(--text);
       user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .mobile-toc ul {
       list-style: none;
       margin: 0;
-      padding: 0.4rem 1rem 0.75rem;
+      padding: 0.5rem 1rem 0.75rem;
       border-top: 1px solid var(--border);
+      max-height: 50vh; /* Prevents long lists from exceeding screen height */
+      overflow-y: auto;
     }
-    .mobile-toc a { display: block; padding: 0.3rem 0; color: var(--text-muted); text-decoration: none; font-size: 0.82rem; }
+    .mobile-toc a { 
+      display: block; 
+      padding: 0.35rem 0; 
+      color: var(--text-muted); 
+      text-decoration: none; 
+      font-size: 0.82rem; 
+    }
+    .mobile-toc a:hover { color: var(--text); }
     .mobile-toc .toc-depth-3 { padding-left: 0.75rem; }
 
     /* In-Page TOC (Desktop Sidebar) */
@@ -483,6 +500,15 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
         searchResults.style.display = 'none';
       }
     });
+    // Auto-close mobile TOC after selecting an item
+    const mobileToc = document.querySelector('.mobile-toc');
+    if (mobileToc) {
+      mobileToc.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          mobileToc.removeAttribute('open');
+        });
+      });
+    }
   </script>
 </body>
 </html>`;
