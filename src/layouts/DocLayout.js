@@ -24,12 +24,13 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} | Docs</title>
   
+  <!-- Merriweather Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
 
   <style>
-    /* 1. Low Strain Themes */
+    /* 1. Low-Strain Eye Comfort Themes */
     :root[data-theme="light"] {
       --bg: #fdfcf9;
       --surface: #f3efe6;
@@ -51,7 +52,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
       --text: #dedcd7;
       --text-muted: #9499a2;
       --accent: #60a5fa;
-      --link-color: #f3c27e;     /* Warm, high-contrast readable amber */
+      --link-color: #f3c27e;     /* Eye-friendly accessible amber */
       --link-hover: #fed7aa;
       --code-bg: #101113;
       --callout-bg: #1d2127;
@@ -69,7 +70,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
       transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* URL link accessibility */
+    /* URL link accessibility & wrapping */
     a { 
       color: var(--link-color); 
       text-decoration: underline; 
@@ -78,7 +79,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     }
     a:hover { color: var(--link-hover); }
 
-    /* Top Sticky Header */
+    /* Sticky Top Header */
     header { 
       height: 60px; 
       border-bottom: 1px solid var(--border); 
@@ -157,7 +158,6 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     .search-result-title { color: var(--text); font-size: 0.85rem; font-weight: 600; font-family: system-ui, sans-serif; }
     .search-result-snippet { color: var(--text-muted); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: system-ui, sans-serif; }
 
-    /* Desktop Far-Right Alignment */
     .header-spacer { flex-grow: 1; }
 
     .theme-toggle {
@@ -173,7 +173,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     }
     .theme-toggle svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; }
 
-    /* Main Container Shell */
+    /* Layout Shell */
     .layout-wrap {
       display: flex;
       max-width: 1400px;
@@ -220,7 +220,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
       z-index: 35;
     }
 
-    /* Main Content Reader */
+    /* Content Area */
     main { 
       flex-grow: 1; 
       min-width: 0; 
@@ -234,7 +234,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     main pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; border: 1px solid var(--border); overflow-x: auto; font-family: monospace; font-size: 0.88rem; }
     main code { font-family: monospace; font-size: 0.88em; }
 
-    /* Boxed Callouts (Notes & Disclaimers) */
+    /* Boxed Callouts (Disclaimers & Notes) */
     main blockquote {
       margin: 1.75rem 0;
       padding: 1.1rem 1.4rem;
@@ -250,50 +250,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     main blockquote p { margin: 0; }
     main blockquote strong { color: var(--text); font-weight: 700; }
 
-    /* In-Page TOC (Mobile Dropdown) */
-/* In-Page TOC (Mobile Sticky Dropdown) */
-    .mobile-toc {
-      display: none;
-      position: sticky;
-      top: 60px; /* Aligns flush beneath the 60px sticky header */
-      z-index: 30;
-      margin: 0 0 1.5rem 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-family: system-ui, sans-serif;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); /* Subtle elevation */
-    }
-    .mobile-toc summary {
-      padding: 0.65rem 1rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: var(--text);
-      user-select: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .mobile-toc ul {
-      list-style: none;
-      margin: 0;
-      padding: 0.5rem 1rem 0.75rem;
-      border-top: 1px solid var(--border);
-      max-height: 50vh; /* Prevents long lists from exceeding screen height */
-      overflow-y: auto;
-    }
-    .mobile-toc a { 
-      display: block; 
-      padding: 0.35rem 0; 
-      color: var(--text-muted); 
-      text-decoration: none; 
-      font-size: 0.82rem; 
-    }
-    .mobile-toc a:hover { color: var(--text); }
-    .mobile-toc .toc-depth-3 { padding-left: 0.75rem; }
-
-    /* In-Page TOC (Desktop Sidebar) */
+    /* Desktop TOC (Right Sidebar) */
     aside.desktop-toc { 
       width: 240px; 
       flex-shrink: 0; 
@@ -325,6 +282,57 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     }
     .desktop-toc .toc-depth-3 { padding-left: 0.75rem; }
 
+    /* Mobile Floating Bottom TOC Pill & Sheet */
+    .mobile-toc {
+      display: none;
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      z-index: 45;
+      font-family: system-ui, sans-serif;
+    }
+    .mobile-toc summary {
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.55rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+    .mobile-toc summary::-webkit-details-marker { display: none; }
+    .mobile-toc ul {
+      list-style: none;
+      margin: 0;
+      padding: 0.75rem 1rem;
+      position: fixed;
+      bottom: 4.5rem;
+      left: 1rem;
+      right: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 55vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .mobile-toc a {
+      display: block;
+      padding: 0.4rem 0;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    .mobile-toc a:hover { color: var(--text); }
+    .mobile-toc .toc-depth-3 { padding-left: 0.85rem; }
+
     /* Responsive Breakpoints */
     @media (max-width: 860px) {
       header { padding: 0 0.75rem; gap: 0.5rem; }
@@ -352,20 +360,24 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
 </head>
 <body>
   <header>
+    <!-- Left on mobile: Hamburger Menu -->
     <button id="menuBtn" class="menu-btn" aria-label="Toggle Navigation">
       <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
     </button>
 
+    <!-- Site Name -->
     <a href="${basePath}/" class="logo">Docs Base</a>
 
+    <!-- Middle: Search Input -->
     <div class="search-box">
       <input type="text" id="searchInput" class="search-input" placeholder="Search docs..." />
       <div id="searchResults" class="search-results"></div>
     </div>
 
-    <!-- Pushes Theme Toggle to far right on Desktop -->
+    <!-- Desktop Spacer pushes theme toggle to far right -->
     <div class="header-spacer"></div>
 
+    <!-- Far Right: Theme Toggle -->
     <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
       <svg id="themeIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
     </button>
@@ -379,24 +391,36 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     </aside>
 
     <main>
-      ${toc.length > 0 ? `
-      <details class="mobile-toc">
-        <summary>On this page ▾</summary>
-        <ul>${tocListItems}</ul>
-      </details>
-      ` : ''}
-
       ${content}
     </main>
 
+    <!-- Desktop Sticky TOC -->
     <aside class="desktop-toc">
       <div class="toc-title">On this page</div>
       <ul>${tocListItems}</ul>
     </aside>
   </div>
 
+  <!-- Mobile Floating Bottom TOC Button -->
+  ${toc.length > 0 ? `
+  <details class="mobile-toc" id="mobileToc">
+    <summary>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+      On this page
+    </summary>
+    <ul>${tocListItems}</ul>
+  </details>
+  ` : ''}
+
   <script>
-    // 1. Theme Toggle
+    // 1. Theme Management
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
     const htmlEl = document.documentElement;
@@ -420,7 +444,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
       }
     }
 
-    // 2. Mobile Drawer
+    // 2. Mobile Drawer Navigation
     const menuBtn = document.getElementById('menuBtn');
     const sidebar = document.getElementById('sidebar');
     const backdrop = document.getElementById('backdrop');
@@ -433,7 +457,7 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
     menuBtn.addEventListener('click', toggleMenu);
     backdrop.addEventListener('click', toggleMenu);
 
-    // 3. Scroll-Spy (Highlight active TOC section)
+    // 3. Desktop Scroll-Spy
     const tocLinks = document.querySelectorAll('.desktop-toc a');
     const trackedHeadings = Array.from(document.querySelectorAll('main h2, main h3'));
 
@@ -459,7 +483,23 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
       trackedHeadings.forEach((h) => observer.observe(h));
     }
 
-    // 4. Search Functionality
+    // 4. Mobile Floating TOC Actions
+    const mobileToc = document.getElementById('mobileToc');
+    if (mobileToc) {
+      mobileToc.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          mobileToc.removeAttribute('open');
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!mobileToc.contains(e.target)) {
+          mobileToc.removeAttribute('open');
+        }
+      });
+    }
+
+    // 5. Client Search Logic
     let indexData = [];
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
@@ -500,15 +540,6 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
         searchResults.style.display = 'none';
       }
     });
-    // Auto-close mobile TOC after selecting an item
-    const mobileToc = document.querySelector('.mobile-toc');
-    if (mobileToc) {
-      mobileToc.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-          mobileToc.removeAttribute('open');
-        });
-      });
-    }
   </script>
 </body>
 </html>`;
