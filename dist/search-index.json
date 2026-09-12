@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Introduction",
+    "link": "/docs-site/getting-started",
+    "snippet": "Introduction\n\nWelcome to the documentation platform running directly from a Chromebook.\n\nHow it works\nThis site converts raw markdown to HTML on GitHub's cloud servers.\n\nNext Steps\nExplore the manual setup guide in the sidebar."
+  },
+  {
+    "title": "Manual Setup",
+    "link": "/docs-site/manual-setup",
+    "snippet": "Manual Setup\n\nThis is the second article.\n\nVerification\nNotice how the left sidebar automatically updates which article is highlighted."
+  }
+]
