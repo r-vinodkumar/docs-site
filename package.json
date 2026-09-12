@@ -1,0 +1,29 @@
+{
+  "name": "docs-site",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/r-vinodkumar/docs-site.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/r-vinodkumar/docs-site/issues"
+  },
+  "homepage": "https://github.com/r-vinodkumar/docs-site#readme",
+  "dependencies": {
+    "front-matter": "^4.0.2",
+    "marked": "^18.0.12"
+  },
+  "devDependencies": {}
+}
