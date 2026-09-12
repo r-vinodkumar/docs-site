@@ -24,37 +24,206 @@ export function renderDoc({ title, content, toc, currentPath, sidebar, basePath 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} | Docs</title>
   <style>
-    :root { --bg: #0b0f19; --surface: #111827; --border: #1f2937; --text: #e5e7eb; --muted: #9ca3af; --accent: #6366f1; }
+    :root { 
+      --bg: #0b0f19; 
+      --surface: #111827; 
+      --border: #1f2937; 
+      --text: #e5e7eb; 
+      --muted: #9ca3af; 
+      --accent: #3b82f6; 
+    }
     * { box-sizing: border-box; }
     body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
-    header { height: 60px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; padding: 0 1.5rem; position: sticky; top: 0; z-index: 10; }
-    .site-title { font-weight: 700; color: #fff; font-size: 1.1rem; }
-    .docs-container { display: grid; grid-template-columns: 240px minmax(0, 1fr) 200px; max-width: 1400px; margin: 0 auto; min-height: calc(100vh - 60px); }
-    aside.sidebar { border-right: 1px solid var(--border); padding: 1.5rem; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; }
+    
+    /* Top Header */
+    header { 
+      height: 64px; 
+      border-bottom: 1px solid var(--border); 
+      background: var(--surface); 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: 0 2rem; 
+      position: sticky; 
+      top: 0; 
+      z-index: 50; 
+    }
+    .logo { font-weight: 700; color: #fff; text-decoration: none; font-size: 1.1rem; }
+
+    /* Search Box */
+    .search-box { position: relative; width: 320px; }
+    .search-input {
+      width: 100%;
+      background: #030712;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-results {
+      position: absolute;
+      top: 110%;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+    }
+    .search-result-item {
+      display: block;
+      padding: 0.6rem 0.8rem;
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-result-item:hover { background: #1f2937; }
+    .search-result-title { color: #fff; font-size: 0.85rem; font-weight: 600; }
+    .search-result-snippet { color: var(--muted); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* 3-Column Layout */
+    .layout-wrap {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Left Sidebar */
+    aside.sidebar { 
+      width: 260px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border); 
+      padding: 1.5rem 1rem; 
+      position: sticky; 
+      top: 64px; 
+      height: calc(100vh - 64px); 
+      overflow-y: auto; 
+    }
     .sidebar-group { margin-bottom: 1.5rem; }
-    .sidebar-title { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 0.5rem; }
+    .sidebar-title { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 0.5rem; padding-left: 0.5rem; }
     .sidebar ul { list-style: none; padding: 0; margin: 0; }
-    .sidebar a { display: block; padding: 0.35rem 0.5rem; color: var(--muted); text-decoration: none; font-size: 0.9rem; border-radius: 4px; }
+    .sidebar a { 
+      display: block; 
+      padding: 0.4rem 0.6rem; 
+      color: var(--muted); 
+      text-decoration: none; 
+      font-size: 0.9rem; 
+      border-radius: 6px; 
+      margin-bottom: 2px;
+    }
     .sidebar a:hover { color: #fff; background: #1f2937; }
     .sidebar a.active { color: #fff; background: var(--accent); font-weight: 600; }
-    main { padding: 2rem 3rem; line-height: 1.6; }
-    main h1 { font-size: 2.2rem; margin-top: 0; color: #fff; }
-    main h2 { margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; color: #f3f4f6; }
-    aside.toc { padding: 1.5rem 1rem; position: sticky; top: 60px; height: calc(100vh - 60px); }
-    .toc-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.75rem; text-transform: uppercase; }
+
+    /* Content Area */
+    main { 
+      flex-grow: 1; 
+      min-width: 0; 
+      padding: 2rem 3rem; 
+      line-height: 1.6; 
+    }
+    main h1 { font-size: 2rem; margin-top: 0; color: #fff; }
+    main h2 { margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; color: #f3f4f6; }
+    main pre { background: #030712; padding: 1rem; border-radius: 6px; border: 1px solid var(--border); overflow-x: auto; }
+
+    /* Right Table of Contents */
+    aside.toc { 
+      width: 220px; 
+      flex-shrink: 0; 
+      padding: 1.5rem 1rem; 
+      position: sticky; 
+      top: 64px; 
+      height: calc(100vh - 64px); 
+    }
+    .toc-title { font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 0.75rem; text-transform: uppercase; }
     .toc ul { list-style: none; padding: 0; margin: 0; border-left: 1px solid var(--border); }
-    .toc a { display: block; padding: 0.25rem 0 0.25rem 1rem; color: var(--muted); text-decoration: none; font-size: 0.85rem; }
+    .toc a { display: block; padding: 0.2rem 0 0.2rem 0.8rem; color: var(--muted); text-decoration: none; font-size: 0.8rem; }
     .toc a:hover { color: var(--accent); }
-    .toc-depth-3 { padding-left: 0.5rem; }
   </style>
 </head>
 <body>
-  <header><div class="site-title">Documentation</div></header>
-  <div class="docs-container">
-    <aside class="sidebar">${sidebarHtml}</aside>
-    <main>${content}</main>
-    <aside class="toc"><div class="toc-title">On this page</div><ul>${tocHtml}</ul></aside>
+  <header>
+    <a href="${basePath}/" class="logo">Docs Base</a>
+    <div class="search-box">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search documentation... (Press /)" />
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </header>
+
+  <div class="layout-wrap">
+    <aside class="sidebar">
+      ${sidebarHtml}
+    </aside>
+
+    <main>
+      ${content}
+    </main>
+
+    <aside class="toc">
+      <div class="toc-title">On this page</div>
+      <ul>
+        ${tocHtml}
+      </ul>
+    </aside>
   </div>
+
+  <script>
+    // In-browser live search
+    let indexData = [];
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    // Fetch the index once
+    fetch('${basePath}/search-index.json')
+      .then(res => res.json())
+      .then(data => { indexData = data; })
+      .catch(() => {});
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        searchResults.style.display = 'none';
+        searchResults.innerHTML = '';
+        return;
+      }
+
+      const matches = indexData.filter(item => 
+        item.title.toLowerCase().includes(q) || item.snippet.toLowerCase().includes(q)
+      );
+
+      if (matches.length > 0) {
+        searchResults.innerHTML = matches.map(m => \`
+          <a href="\${m.link}" class="search-result-item">
+            <div class="search-result-title">\${m.title}</div>
+            <div class="search-result-snippet">\${m.snippet}</div>
+          </a>
+        \`).join('');
+        searchResults.style.display = 'block';
+      } else {
+        searchResults.innerHTML = '<div style="padding: 0.75rem; font-size: 0.8rem; color: #9ca3af;">No results found</div>';
+        searchResults.style.display = 'block';
+      }
+    });
+
+    // Close search on click outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-box')) {
+        searchResults.style.display = 'none';
+      }
+    });
+
+    // Hotkey "/" to focus search
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+  </script>
 </body>
 </html>`;
 }

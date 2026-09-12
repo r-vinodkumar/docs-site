@@ -5,7 +5,6 @@ import { marked } from 'marked';
 import fm from 'front-matter';
 import { renderDoc } from './src/layouts/DocLayout.js';
 
-// If running in GitHub Actions, get the repository name for GitHub Pages pathing
 const repoName = process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}` : '';
 
 const SIDEBAR_CONFIG = [
@@ -26,6 +25,7 @@ async function build() {
   await fs.mkdir(DIST_DIR, { recursive: true });
 
   const files = await fs.readdir(CONTENT_DIR);
+  const searchIndex = [];
 
   for (const file of files) {
     if (!file.endsWith('.md')) continue;
@@ -34,6 +34,7 @@ async function build() {
     const { attributes, body } = fm(raw);
     const baseName = path.basename(file, '.md');
     const currentPath = `/${baseName}`;
+    const pageTitle = attributes.title || baseName;
 
     const toc = [];
     const renderer = new marked.Renderer();
@@ -45,8 +46,16 @@ async function build() {
 
     const contentHtml = marked.parse(body, { renderer });
 
+    // Plain text extraction for instant search
+    const cleanText = body.replace(/#+\s+/g, '').replace(/[*_`]/g, '').slice(0, 300);
+    searchIndex.push({
+      title: pageTitle,
+      link: `${repoName}${currentPath}`,
+      snippet: cleanText
+    });
+
     const pageHtml = renderDoc({
-      title: attributes.title || baseName,
+      title: pageTitle,
       content: contentHtml,
       toc,
       currentPath,
@@ -58,15 +67,15 @@ async function build() {
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(path.join(outDir, 'index.html'), pageHtml, 'utf-8');
 
-    // If it's getting-started, also copy it as index.html so root loads directly
     if (baseName === 'getting-started') {
       await fs.writeFile(path.join(DIST_DIR, 'index.html'), pageHtml, 'utf-8');
     }
   }
 
-  // Create .nojekyll so GitHub Pages doesn't ignore modern folder structures
+  // Write the search index file
+  await fs.writeFile(path.join(DIST_DIR, 'search-index.json'), JSON.stringify(searchIndex, null, 2), 'utf-8');
   await fs.writeFile(path.join(DIST_DIR, '.nojekyll'), '');
-  console.log('Build completed successfully!');
+  console.log('✓ Build complete with search index!');
 }
 
 build();
