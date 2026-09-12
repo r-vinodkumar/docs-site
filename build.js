@@ -9,41 +9,78 @@ const repoName = process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITO
 const CONTENT_DIR = './content/docs';
 const DIST_DIR = './dist';
 
+// Helper: Recursively find all .md files across all subdirectories
+async function getMarkdownFiles(dir) {
+  let results = [];
+  const list = await fs.readdir(dir, { withFileTypes: true });
+  for (const dirent of list) {
+    const fullPath = path.join(dir, dirent.name);
+    if (dirent.isDirectory()) {
+      results = results.concat(await getMarkdownFiles(fullPath));
+    } else if (dirent.isFile() && dirent.name.endsWith('.md')) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
+// Helper: Format folder names to titles ("indian-constitution" -> "Indian Constitution")
+function formatTitle(slug) {
+  return slug
+    .replace(/^\d+-/, '') // remove leading numbers like 01-
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
+}
+
 async function build() {
   await fs.rm(DIST_DIR, { recursive: true, force: true });
   await fs.mkdir(DIST_DIR, { recursive: true });
 
-  const files = await fs.readdir(CONTENT_DIR);
-  const mdFiles = files.filter(f => f.endsWith('.md'));
+  const mdFiles = await getMarkdownFiles(CONTENT_DIR);
 
-  // 1. Read all files first to auto-construct sidebar navigation
+  // 1. Parse all documents
   const parsedDocs = [];
-  for (const file of mdFiles) {
-    const raw = await fs.readFile(path.join(CONTENT_DIR, file), 'utf-8');
+  for (const filePath of mdFiles) {
+    const raw = await fs.readFile(filePath, 'utf-8');
     const { attributes, body } = fm(raw);
-    const baseName = path.basename(file, '.md');
     
+    // Relative path from content/docs (e.g. "indian-constitution/01-union.md")
+    const relativePath = path.relative(CONTENT_DIR, filePath);
+    const dirName = path.dirname(relativePath);
+    const fileBase = path.basename(filePath, '.md');
+
+    // Determine group: frontmatter > folder name > 'General'
+    let group = attributes.group;
+    if (!group) {
+      group = dirName === '.' ? 'General' : formatTitle(dirName);
+    }
+
+    // Determine clean route path (strip out sort prefixes like "01-")
+    const cleanRouteName = fileBase.replace(/^\d+-/, '');
+    const currentPath = dirName === '.' 
+      ? `/${cleanRouteName}` 
+      : `/${dirName}/${cleanRouteName}`;
+
     parsedDocs.push({
-      file,
-      baseName,
-      title: attributes.title || baseName,
-      group: attributes.group || 'General',       // Group category (optional)
-      order: attributes.order || 99,              // Sort order (optional)
-      body
+      filePath,
+      currentPath,
+      group,
+      title: attributes.title || formatTitle(fileBase),
+      order: attributes.order !== undefined ? attributes.order : 99,
+      body,
+      isRoot: fileBase === 'getting-started' || fileBase === 'index'
     });
   }
 
-  // 2. Automatically generate the sidebar configuration grouped by category
+  // 2. Build Sidebar Navigation Tree
   const groupsMap = {};
-  parsedDocs.sort((a, b) => a.order - b.order);
+  parsedDocs.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 
   for (const doc of parsedDocs) {
-    if (!groupsMap[doc.group]) {
-      groupsMap[doc.group] = [];
-    }
+    if (!groupsMap[doc.group]) groupsMap[doc.group] = [];
     groupsMap[doc.group].push({
       label: doc.title,
-      link: `/${doc.baseName}`
+      link: doc.currentPath
     });
   }
 
@@ -52,11 +89,10 @@ async function build() {
     items: groupsMap[groupName]
   }));
 
-  // 3. Compile pages and build search index
+  // 3. Compile and Emit Pages
   const searchIndex = [];
 
   for (const doc of parsedDocs) {
-    const currentPath = `/${doc.baseName}`;
     const toc = [];
     const renderer = new marked.Renderer();
 
@@ -68,10 +104,11 @@ async function build() {
 
     const contentHtml = marked.parse(doc.body, { renderer });
 
+    // Search snippet
     const cleanText = doc.body.replace(/#+\s+/g, '').replace(/[*_`]/g, '').slice(0, 300);
     searchIndex.push({
       title: doc.title,
-      link: `${repoName}${currentPath}`,
+      link: `${repoName}${doc.currentPath}`,
       snippet: cleanText
     });
 
@@ -79,24 +116,25 @@ async function build() {
       title: doc.title,
       content: contentHtml,
       toc,
-      currentPath,
+      currentPath: doc.currentPath,
       sidebar: autoSidebar,
       basePath: repoName
     });
 
-    const outDir = path.join(DIST_DIR, doc.baseName);
+    // Write to dist/<route>/index.html
+    const outDir = path.join(DIST_DIR, doc.currentPath.replace(/^\//, ''));
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(path.join(outDir, 'index.html'), pageHtml, 'utf-8');
 
-    // Default landing page
-    if (doc.baseName === 'getting-started' || doc.baseName === 'index') {
+    // Default entry page
+    if (doc.isRoot && doc.currentPath === '/getting-started') {
       await fs.writeFile(path.join(DIST_DIR, 'index.html'), pageHtml, 'utf-8');
     }
   }
 
   await fs.writeFile(path.join(DIST_DIR, 'search-index.json'), JSON.stringify(searchIndex, null, 2), 'utf-8');
   await fs.writeFile(path.join(DIST_DIR, '.nojekyll'), '');
-  console.log('Build completed with automated sidebar and search index!');
+  console.log('Build complete with recursive directory support!');
 }
 
 build();
